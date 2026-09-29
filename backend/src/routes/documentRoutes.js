@@ -10,6 +10,7 @@ function createDocumentRoutes({ service, repository, storageDir, maxFileSize }) 
   const upload = multer({
     storage: multer.diskStorage({
       destination: storageDir,
+      // Evita colisões e não usa o nome fornecido pelo cliente como caminho no disco.
       filename: (req, file, callback) => callback(null, crypto.randomUUID())
     }),
     limits: { fileSize: maxFileSize }
