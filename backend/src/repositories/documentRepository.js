@@ -3,6 +3,7 @@ const path = require('node:path');
 
 function createDocumentRepository({ storageDir }) {
   fs.mkdirSync(storageDir, { recursive: true });
+  // Nesta versão, apenas os metadados ficam em memória; os arquivos usam o diretório local.
   const documents = new Map();
 
   return {

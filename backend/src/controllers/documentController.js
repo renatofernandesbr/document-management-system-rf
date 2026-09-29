@@ -4,6 +4,7 @@ function createDocumentController({ service, repository }) {
   return {
     upload(req, res) {
       const document = service.create({ file: req.file, owner: req.owner });
+      // O identificador físico é interno; a API retorna apenas os metadados públicos.
       const { storedName, ...publicDocument } = document;
       return res.status(201).json(publicDocument);
     },
@@ -22,6 +23,7 @@ function createDocumentController({ service, repository }) {
           if (!error || res.headersSent) {
             return;
           }
+          // Os metadados podem continuar em memória mesmo se o arquivo tiver sido removido.
           if (error.code === 'ENOENT') {
             return next(new AppError(404, 'DOCUMENT_NOT_FOUND', 'Documento não encontrado.'));
           }

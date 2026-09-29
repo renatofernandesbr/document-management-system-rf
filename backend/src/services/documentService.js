@@ -8,6 +8,7 @@ function createDocumentService(repository) {
         throw new AppError(400, 'FILE_REQUIRED', 'É necessário enviar um arquivo.');
       }
 
+      // Descarta diretórios que possam vir no nome e preserva apenas o nome exibível.
       const originalName = file.originalname.replace(/\\/g, '/').split('/').pop();
       const document = {
         id: randomUUID(),
@@ -29,6 +30,7 @@ function createDocumentService(repository) {
     getDownload(id, owner) {
       const document = repository.findById(id);
       if (!document || document.owner !== owner) {
+        // Retorna o mesmo erro nos dois casos para não revelar documentos de outros usuários.
         throw new AppError(404, 'DOCUMENT_NOT_FOUND', 'Documento não encontrado.');
       }
 

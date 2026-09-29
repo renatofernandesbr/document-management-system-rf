@@ -5,6 +5,7 @@ const { createDocumentService } = require('./services/documentService');
 const { createDocumentRoutes } = require('./routes/documentRoutes');
 const { errorHandler } = require('./middleware/errorHandler');
 
+// Permite configurar cada instância, mantendo os testes isolados do servidor real.
 function createApp(options = {}) {
   const storageDir = path.resolve(
     options.storageDir || process.env.STORAGE_DIR || path.join(__dirname, '../storage')

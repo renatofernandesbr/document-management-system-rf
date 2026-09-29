@@ -3,6 +3,7 @@ const { AppError } = require('../errors/appError');
 
 function errorHandler(error, req, res, next) {
   if (res.headersSent) {
+    // Delega ao Express quando a resposta já começou e não pode ser substituída.
     return next(error);
   }
 
@@ -18,6 +19,7 @@ function errorHandler(error, req, res, next) {
     });
   }
 
+  // Erros inesperados recebem uma mensagem genérica para não expor detalhes internos.
   const status = error instanceof AppError ? error.status : 500;
   const code = error instanceof AppError ? error.code : 'INTERNAL_ERROR';
   const message = error instanceof AppError ? error.message : 'Ocorreu um erro interno.';
