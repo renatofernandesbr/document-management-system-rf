@@ -1,3 +1,5 @@
+const { AppError } = require('../errors/appError');
+
 function createDocumentController({ service, repository }) {
   return {
     upload(req, res) {

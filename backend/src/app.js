@@ -7,7 +7,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 
 function createApp(options = {}) {
   const storageDir = path.resolve(
-    options.storageDir || process.env.STORAGE_DIR || path.join(__dirname, '../../storage')
+    options.storageDir || process.env.STORAGE_DIR || path.join(__dirname, '../storage')
   );
   const maxFileSize = Number(
     options.maxFileSize || process.env.MAX_FILE_SIZE_BYTES || 10 * 1024 * 1024
