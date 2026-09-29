@@ -1,33 +1,27 @@
 import { useState } from 'react';
 import { uploadDocument } from '../services/documents.js';
+import useAsyncAction from '../hooks/useAsyncAction.js';
 
 export default function UploadComponent({ owner, onUploaded }) {
-  const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const { run, busy, error, setError } = useAsyncAction(uploadDocument);
 
   async function submitUpload(event) {
     event.preventDefault();
     const form = event.currentTarget;
     const file = new FormData(form).get('file');
+    setMessage('');
     if (!(file instanceof File) || (file.size === 0 && !file.name)) {
       setError('Selecione um arquivo para enviar.');
       return;
     }
 
-    setBusy(true);
-    setError('');
-    setMessage('');
-    try {
-      const uploadedDocument = await uploadDocument(owner, file);
-      onUploaded(uploadedDocument);
-      form.reset();
-      setMessage('Arquivo enviado com sucesso.');
-    } catch (uploadError) {
-      setError(uploadError.message);
-    } finally {
-      setBusy(false);
-    }
+    const uploadedDocument = await run(owner, file);
+    if (!uploadedDocument) return;
+
+    onUploaded(uploadedDocument);
+    form.reset();
+    setMessage('Arquivo enviado com sucesso.');
   }
 
   return (

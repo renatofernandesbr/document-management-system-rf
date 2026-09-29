@@ -1,20 +1,11 @@
-import { useState } from 'react';
 import { downloadDocument } from '../services/documents.js';
+import useAsyncAction from '../hooks/useAsyncAction.js';
 
 export default function DownloadButton({ owner, documentId }) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const { run, busy, error } = useAsyncAction(downloadDocument);
 
-  async function download() {
-    setBusy(true);
-    setError('');
-    try {
-      await downloadDocument(owner, documentId);
-    } catch (downloadError) {
-      setError(downloadError.message);
-    } finally {
-      setBusy(false);
-    }
+  function download() {
+    run(owner, documentId);
   }
 
   return (

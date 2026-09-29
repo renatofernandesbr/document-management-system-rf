@@ -13,7 +13,7 @@ export default function App() {
   const [ownerInput, setOwnerInput] = useState(storedOwner);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function App() {
       });
 
     return () => controller.abort();
-  }, [owner]);
+  }, [owner, reloadKey]);
 
   function changeOwner(event) {
     event.preventDefault();
@@ -49,16 +49,8 @@ export default function App() {
     setOwner(nextOwner);
   }
 
-  async function refreshDocuments() {
-    setRefreshing(true);
-    setError('');
-    try {
-      setDocuments(await getDocuments(owner));
-    } catch (requestError) {
-      setError(requestError.message);
-    } finally {
-      setRefreshing(false);
-    }
+  function refreshDocuments() {
+    setReloadKey((key) => key + 1);
   }
 
   function addDocument(document) {
@@ -108,7 +100,7 @@ export default function App() {
             className="quiet-button refresh-button"
             type="button"
             onClick={refreshDocuments}
-            disabled={refreshing || loading}
+            disabled={loading}
             aria-label="Atualizar lista de documentos"
           >
             <span aria-hidden="true">↻</span> Atualizar
