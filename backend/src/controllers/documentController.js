@@ -1,6 +1,6 @@
 const { AppError } = require('../errors/appError');
 
-function createDocumentController({ service, repository }) {
+function createDocumentController({ service }) {
   return {
     upload(req, res) {
       const document = service.create({ file: req.file, owner: req.owner });
@@ -14,7 +14,7 @@ function createDocumentController({ service, repository }) {
     download(req, res, next) {
       const document = service.getDownload(req.params.id, req.owner);
       return res.download(
-        repository.getFilePath(document.storedName),
+        document.filePath,
         document.originalName,
         (error) => {
           if (!error || res.headersSent) {

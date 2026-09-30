@@ -4,9 +4,9 @@ const multer = require('multer');
 const { createDocumentController } = require('../controllers/documentController');
 const { requireUser } = require('../middleware/requireUser');
 
-function createDocumentRoutes({ service, repository, storageDir, maxFileSize }) {
+function createDocumentRoutes({ service, storageDir, maxFileSize }) {
   const router = express.Router();
-  const controller = createDocumentController({ service, repository });
+  const controller = createDocumentController({ service });
   const upload = multer({
     storage: multer.diskStorage({
       destination: storageDir,
