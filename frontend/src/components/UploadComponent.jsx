@@ -19,7 +19,7 @@ export default function UploadComponent({ owner, onUploaded }) {
     const uploadedDocument = await run(owner, file);
     if (!uploadedDocument) return;
 
-    onUploaded(uploadedDocument);
+    onUploaded(owner, uploadedDocument);
     form.reset();
     setMessage('Arquivo enviado com sucesso.');
   }

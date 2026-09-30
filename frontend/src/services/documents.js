@@ -48,9 +48,13 @@ export async function downloadDocument(owner, documentId) {
   const plainName = disposition.match(/filename="?([^";]+)"?/i)?.[1];
 
   link.href = blobUrl;
-  link.download = encodedName
-    ? decodeURIComponent(encodedName)
-    : plainName || 'documento';
+  try {
+    link.download = encodedName
+      ? decodeURIComponent(encodedName)
+      : plainName || 'documento';
+  } catch {
+    link.download = plainName || 'documento';
+  }
   document.body.append(link);
   link.click();
   link.remove();

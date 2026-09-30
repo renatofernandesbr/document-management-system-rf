@@ -2,14 +2,25 @@ const { randomUUID } = require('node:crypto');
 const { AppError } = require('../errors/appError');
 
 function createDocumentService(repository) {
+  function sanitizeOriginalName(originalName) {
+    const name = String(originalName || '')
+      .replace(/\\/g, '/')
+      .split('/')
+      .pop()
+      .replace(/[\u0000-\u001f\u007f]/g, '')
+      .trim()
+      .slice(0, 255);
+
+    return name || 'documento';
+  }
+
   return {
     create({ file, owner }) {
       if (!file) {
         throw new AppError(400, 'FILE_REQUIRED', 'É necessário enviar um arquivo.');
       }
 
-      // Descarta diretórios que possam vir no nome e preserva apenas o nome exibível.
-      const originalName = file.originalname.replace(/\\/g, '/').split('/').pop();
+      const originalName = sanitizeOriginalName(file.originalname);
       const document = {
         id: randomUUID(),
         originalName,
@@ -19,7 +30,12 @@ function createDocumentService(repository) {
         storedName: file.filename
       };
 
-      repository.create(document);
+      try {
+        repository.create(document);
+      } catch (error) {
+        repository.removeFile(document.storedName);
+        throw error;
+      }
       return document;
     },
 
@@ -34,7 +50,10 @@ function createDocumentService(repository) {
         throw new AppError(404, 'DOCUMENT_NOT_FOUND', 'Documento não encontrado.');
       }
 
-      return document;
+      return {
+        filePath: repository.getFilePath(document.storedName),
+        originalName: document.originalName
+      };
     }
   };
 }

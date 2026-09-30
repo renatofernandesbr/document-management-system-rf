@@ -111,3 +111,39 @@ test('upload exige usuário e arquivo e aplica limite configurável', async () =
     await server.close();
   }
 });
+
+test('valida identidade e não usa o nome original como caminho físico', async () => {
+  const server = await startTestServer();
+
+  try {
+    const invalidUserForm = new FormData();
+    invalidUserForm.set('file', new Blob(['ok']), 'ok.txt');
+    const invalidUserResponse = await fetch(`${server.baseUrl}/upload`, {
+      method: 'POST',
+      headers: { 'X-User-Id': `${'a'.repeat(129)}` },
+      body: invalidUserForm
+    });
+    assert.equal(invalidUserResponse.status, 400);
+    assert.equal((await invalidUserResponse.json()).error.code, 'INVALID_USER');
+
+    const traversalForm = new FormData();
+    traversalForm.set('file', new Blob(['seguro']), '../fora-do-storage.txt');
+    const uploadResponse = await fetch(`${server.baseUrl}/upload`, {
+      method: 'POST',
+      headers: { 'X-User-Id': 'usuario-1' },
+      body: traversalForm
+    });
+    const document = await uploadResponse.json();
+
+    assert.equal(uploadResponse.status, 201);
+    assert.equal(document.originalName, 'fora-do-storage.txt');
+    assert.deepEqual((await fs.readdir(server.storageDir)).length, 1);
+  } finally {
+    await server.close();
+  }
+});
+
+test('rejeita limite de arquivo inválido na configuração', () => {
+  assert.throws(() => app.createApp({ maxFileSize: 0 }), /inteiro positivo/);
+  assert.throws(() => app.createApp({ maxFileSize: Number.NaN }), /inteiro positivo/);
+});

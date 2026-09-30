@@ -10,9 +10,12 @@ function createApp(options = {}) {
   const storageDir = path.resolve(
     options.storageDir || process.env.STORAGE_DIR || path.join(__dirname, '../storage')
   );
-  const maxFileSize = Number(
-    options.maxFileSize || process.env.MAX_FILE_SIZE_BYTES || 10 * 1024 * 1024
-  );
+  const configuredMaxFileSize =
+    options.maxFileSize ?? process.env.MAX_FILE_SIZE_BYTES ?? 10 * 1024 * 1024;
+  const maxFileSize = Number(configuredMaxFileSize);
+  if (!Number.isSafeInteger(maxFileSize) || maxFileSize <= 0) {
+    throw new Error('MAX_FILE_SIZE_BYTES deve ser um inteiro positivo.');
+  }
   const repository = createDocumentRepository({ storageDir });
   const service = createDocumentService(repository);
   const app = express();
@@ -21,7 +24,7 @@ function createApp(options = {}) {
   app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
   });
-  app.use(createDocumentRoutes({ service, repository, storageDir, maxFileSize }));
+  app.use(createDocumentRoutes({ service, storageDir, maxFileSize }));
   app.use((req, res) => {
     res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Rota não encontrada.' } });
   });
