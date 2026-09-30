@@ -4,14 +4,11 @@ function createDocumentController({ service, repository }) {
   return {
     upload(req, res) {
       const document = service.create({ file: req.file, owner: req.owner });
-      // O identificador físico é interno; a API retorna apenas os metadados públicos.
-      const { storedName, ...publicDocument } = document;
-      return res.status(201).json(publicDocument);
+      return res.status(201).json(document);
     },
 
     list(req, res) {
-      const documents = service.list(req.owner).map(({ storedName, ...document }) => document);
-      return res.json({ documents });
+      return res.json({ documents: service.list(req.owner) });
     },
 
     download(req, res, next) {
