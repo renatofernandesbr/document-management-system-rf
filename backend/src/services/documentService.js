@@ -61,7 +61,7 @@ function createDocumentService(repository) {
         repository.removeFile(document.storedName);
         throw error;
       }
-      return document;
+      return toPublicDocument(document);
     },
 
     list(owner) {
