@@ -19,7 +19,7 @@ export default function UploadComponent({ owner, onUploaded }) {
     const uploadedDocument = await run(owner, file);
     if (!uploadedDocument) return;
 
-    onUploaded(uploadedDocument);
+    onUploaded(uploadedDocument, owner);
     form.reset();
     setMessage('Arquivo enviado com sucesso.');
   }
@@ -30,7 +30,7 @@ export default function UploadComponent({ owner, onUploaded }) {
         <span className="file-mark" aria-hidden="true">＋</span>
         <span className="file-copy">
           <strong>Escolher documento</strong>
-          <span>Qualquer formato, até 10 MB</span>
+          <span>Qualquer formato, limite configurado no servidor</span>
         </span>
         <input id="document-file" name="file" type="file" required />
       </label>

@@ -64,6 +64,8 @@ test('upload, listagem e download preservam o dono e os metadados', async () => 
     );
     assert.equal(downloadResponse.status, 200);
     assert.match(downloadResponse.headers.get('content-disposition'), /relatorio\.txt/);
+    assert.equal(downloadResponse.headers.get('content-type'), 'application/octet-stream');
+    assert.equal(downloadResponse.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(await downloadResponse.text(), 'conteudo do documento');
 
     const forbiddenDownload = await fetch(
@@ -72,6 +74,40 @@ test('upload, listagem e download preservam o dono e os metadados', async () => 
     );
     assert.equal(forbiddenDownload.status, 404);
     assert.equal((await forbiddenDownload.json()).error.code, 'DOCUMENT_NOT_FOUND');
+  } finally {
+    await server.close();
+  }
+});
+
+test('download rejeita identificador inválido sem consultar o filesystem', async () => {
+  const server = await startTestServer();
+
+  try {
+    const response = await fetch(`${server.baseUrl}/documents/not-a-uuid/download`, {
+      headers: { 'X-User-Id': 'usuario-1' }
+    });
+
+    assert.equal(response.status, 404);
+    assert.equal((await response.json()).error.code, 'NOT_FOUND');
+  } finally {
+    await server.close();
+  }
+});
+
+test('rejeita identidade excessivamente longa e configuração de tamanho inválida', async () => {
+  const server = await startTestServer();
+
+  try {
+    const response = await fetch(`${server.baseUrl}/documents`, {
+      headers: { 'X-User-Id': 'u'.repeat(129) }
+    });
+
+    assert.equal(response.status, 400);
+    assert.equal((await response.json()).error.code, 'USER_REQUIRED');
+    assert.throws(
+      () => app.createApp({ storageDir: server.storageDir, maxFileSize: 0 }),
+      /inteiro positivo/
+    );
   } finally {
     await server.close();
   }

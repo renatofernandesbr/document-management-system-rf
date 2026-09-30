@@ -34,7 +34,12 @@ function createDocumentService(repository) {
       }
 
       const document = buildDocument({ file, owner });
-      repository.create(document);
+      try {
+        repository.create(document);
+      } catch (error) {
+        repository.removeFile(document.storedName).catch(() => {});
+        throw error;
+      }
       return toPublicDocument(document);
     },
 
@@ -43,6 +48,9 @@ function createDocumentService(repository) {
     },
 
     getDownload(id, owner) {
+      if (!/^[0-9a-f-]{36}$/i.test(id)) {
+        throw new AppError(404, 'DOCUMENT_NOT_FOUND', 'Documento não encontrado.');
+      }
       const document = repository.findById(id);
       ensureOwner(document, owner);
       return document;

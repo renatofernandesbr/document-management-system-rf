@@ -41,18 +41,31 @@ export async function downloadDocument(owner, documentId) {
   const response = await request(`/documents/${encodeURIComponent(documentId)}/download`, {
     headers: { 'X-User-Id': owner }
   });
-  const blobUrl = URL.createObjectURL(await response.blob());
-  const link = document.createElement('a');
-  const disposition = response.headers.get('content-disposition') || '';
-  const encodedName = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
-  const plainName = disposition.match(/filename="?([^";]+)"?/i)?.[1];
+  let blobUrl;
+  try {
+    blobUrl = URL.createObjectURL(await response.blob());
+    const link = document.createElement('a');
+    const disposition = response.headers.get('content-disposition') || '';
+    const encodedName = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
+    const plainName = disposition.match(/filename="?([^";]+)"?/i)?.[1];
+    let fileName = plainName || 'documento';
 
-  link.href = blobUrl;
-  link.download = encodedName
-    ? decodeURIComponent(encodedName)
-    : plainName || 'documento';
-  document.body.append(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    if (encodedName) {
+      try {
+        fileName = decodeURIComponent(encodedName);
+      } catch {
+        fileName = plainName || 'documento';
+      }
+    }
+
+    link.href = blobUrl;
+    link.download = fileName;
+    document.body.append(link);
+    link.click();
+    link.remove();
+  } finally {
+    if (blobUrl) {
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+    }
+  }
 }

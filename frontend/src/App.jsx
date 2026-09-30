@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getDocuments } from './services/documents.js';
 import UploadComponent from './components/UploadComponent.jsx';
 import DocumentList from './components/DocumentList.jsx';
@@ -10,6 +10,7 @@ function storedOwner() {
 
 export default function App() {
   const [owner, setOwner] = useState(storedOwner);
+  const ownerRef = useRef(owner);
   const [ownerInput, setOwnerInput] = useState(storedOwner);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +47,8 @@ export default function App() {
     }
 
     window.localStorage.setItem('dms-user-id', nextOwner);
+    ownerRef.current = nextOwner;
+    setDocuments([]);
     setOwner(nextOwner);
   }
 
@@ -53,7 +56,11 @@ export default function App() {
     setReloadKey((key) => key + 1);
   }
 
-  function addDocument(document) {
+  function addDocument(document, documentOwner) {
+    if (documentOwner !== ownerRef.current) {
+      return;
+    }
+
     setDocuments((currentDocuments) =>
       [document, ...currentDocuments].sort(
         (left, right) => right.uploadedAt.localeCompare(left.uploadedAt)

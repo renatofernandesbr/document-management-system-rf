@@ -13,6 +13,8 @@ function createDocumentController({ service, repository }) {
 
     download(req, res, next) {
       const document = service.getDownload(req.params.id, req.owner);
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
       return res.download(
         repository.getFilePath(document.storedName),
         document.originalName,
